@@ -7,15 +7,20 @@ load_dotenv()
 
 DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY")
 
-async def transcribe_video_with_timestamps(video_path, output_file):
+async def transcribe_audio_with_timestamps(audio_path):
+    audio_name = os.path.splitext(os.path.basename(audio_path))[0]
+    
+    output_file = f"transcription_deepgram_{audio_name}.txt"
+
     headers = {
         "Authorization": f"Token {DEEPGRAM_API_KEY}"
     }
 
     async with aiohttp.ClientSession(headers=headers) as session:
-        with open(video_path, "rb") as audio_file:
+        with open(audio_path, "rb") as audio_file:
             audio_data = audio_file.read()
 
+        # Send audio data to Deepgram for transcription
         response = await session.post(
             "https://api.deepgram.com/v1/listen",
             data=audio_data,
@@ -29,7 +34,7 @@ async def transcribe_video_with_timestamps(video_path, output_file):
 
         result = await response.json()
 
-        # Extract word-level timestamps
+        # Extract word-level timestamps from the result
         words_data = []
         if "results" in result and "channels" in result["results"]:
             words = result["results"]["channels"][0].get("alternatives", [{}])[0].get("words", [])
@@ -43,9 +48,7 @@ async def transcribe_video_with_timestamps(video_path, output_file):
         with open(output_file, "w") as f:
             f.write("\n".join(words_data))
 
-# File paths
-video_file = "elon-tucker.mp4"
-output_file = "transcription_deepgram.txt"
+audio_file = "townhall_audio.mp3"  # Audio file path
 
 # Run transcription
-asyncio.run(transcribe_video_with_timestamps(video_file, output_file))
+asyncio.run(transcribe_audio_with_timestamps(audio_file))
