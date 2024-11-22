@@ -4,12 +4,20 @@ from jiwer import wer
 client = speech.SpeechClient()
 
 audio = speech.RecognitionAudio(uri="gs://transcription-test-elon/elon-tucker_audio.flac")
+
+diarization_config = speech.SpeakerDiarizationConfig(
+    enable_speaker_diarization=True,
+    min_speaker_count=2,
+    max_speaker_count=2,
+)
+
 config = speech.RecognitionConfig(
     encoding=speech.RecognitionConfig.AudioEncoding.FLAC,
     sample_rate_hertz=48000,
     language_code="en-US",
     enable_word_time_offsets=True,
     audio_channel_count=2,
+    diarization_config=diarization_config,
     model="latest_long"
 )
 
